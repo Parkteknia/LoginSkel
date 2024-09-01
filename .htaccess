@@ -1,0 +1,21 @@
+RewriteEngine On
+RewriteBase /LoginSkel/
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([^/]+)/?$ public/$1.php [L]
+
+RewriteCond %{REQUEST_URI} ^/LoginSkel/lib/serveQRImage.php
+RewriteRule ^ - [L]
+
+# Redirect everything that is in public
+RewriteCond %{REQUEST_URI} !^/LoginSkel/public/
+RewriteRule ^(.*)$ /LoginSkel/public/$1 [L]
+
+# If the requested file or directory exists, use it directly
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Redirect everything else to index.php (or a file of your choice)
+RewriteRule ^ index.php [L]
