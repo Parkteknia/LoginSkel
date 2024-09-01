@@ -261,7 +261,7 @@ include '../template/header.php';
     
 <script>
     // Credentials for basic authentication
-    const http_auth_basic = true;
+    const http_auth_basic = false;
     const username = '';
     const password = '';
     
