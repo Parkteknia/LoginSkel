@@ -56,55 +56,61 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
 } elseif (isset($_GET['t'])) {
     
-    $token = $_GET['token'] ?? null;
-    // We check if the token has expired
+    $token = $_GET['t'] ?? null;
 
-    if ($loginskel->isExpiredToken($token)===true) {
-        $loginskel->invalidateExpiredToken($token); // Invalida el token expirado
-        $loginskel->destroySession();
-        $loginskel->regenerateSession();
-        header("Location: resend.php");
-        exit;
-    }
-    
-    $userID = $loginskel->activateAccountByToken($token);
-    
-    if ($userID) {
-        
-        if($loginskel->get2Factor()) {
-            
-            $user = $loginskel->getUser2faConf($userID['user_id']);
+    //Check if token is valid
+    if ($loginskel->isValidToken($token, 32)) {
 
-            if (!isset($user['2fa_conf']) || $user['2fa_conf']===0) {
-               
-               
-                
-                    $_SESSION['user'] = $user['username'];
-                    $loginskel->genAndUpdateUserTotp($user['username']);
-                    $qr_data = $loginskel->generateQR($user['username']);
-                    
-                    if ($qr_data) {
-                        
-                        $_SESSION['qr_image'] = $qr_data;
-                        header("Location: 2fa_setup");
-                        exit();
+        // We check if the token has expired
+        if ($loginskel->isExpiredToken($token)===true) {
+            $loginskel->invalidateExpiredToken($token); // Invalida el token expirado
+            $loginskel->destroySession();
+            $loginskel->regenerateSession();
+            header("Location: resend.php");
+            exit;
+        }
+
+        $userID = $loginskel->activateAccountByToken($token);
+
+        if ($userID) {
+
+            if($loginskel->get2Factor()) {
+
+                $user = $loginskel->getUser2faConf($userID['user_id']);
+
+                if (!isset($user['2fa_conf']) || $user['2fa_conf']===0) {
+
+
+
+                        $_SESSION['user'] = $user['username'];
+                        $loginskel->genAndUpdateUserTotp($user['username']);
+                        $qr_data = $loginskel->generateQR($user['username']);
+
+                        if ($qr_data) {
+
+                            $_SESSION['qr_image'] = $qr_data;
+                            header("Location: 2fa_setup");
+                            exit();
+                        }
+                    /*
+                    }else{
+
+                        $ls->reset2fa();
+                        header("Location: 2fa_validate");
+                        exit;*/
                     }
-                /*    
                 }else{
-                  
-                    $ls->reset2fa();
-                    header("Location: 2fa_validate");
-                    exit;*/
+                    header("Location: login");
+                    exit();
                 }
-            }else{
-                header("Location: login");
-                exit();
-            }
-        
-        header("Location: login");
-        exit;
-    } else {
-        echo $loginskel->getTranslation('invalid_token');
+
+            header("Location: login");
+            exit;
+        } else {
+            $validation_error = $loginskel->getTranslation('invalid_token');
+        }
+    }else{
+        $validation_error = $loginskel->getTranslation('invalid_token');
     }
 }
 

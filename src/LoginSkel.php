@@ -2377,6 +2377,18 @@ class LoginSkel {
         return $token;
     }
 
+    /**
+     * Function to validate a Token
+     *
+     * @param string $token
+     * @param int $length
+     * @return bool
+     */
+    public function isValidToken($token, $length) {
+        $expectedLength = $length;
+        return preg_match('/^[a-f0-9]+$/', $token) && strlen($token) === $expectedLength;
+    }
+
     private function codeExist($code) {
         $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM users WHERE activation_code = :code');
         $stmt->execute(['code' => $code]);
